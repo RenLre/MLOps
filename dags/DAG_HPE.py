@@ -1,6 +1,9 @@
+import sys
+import os
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../HPE')))
 import HPE_test
 
 default_args = {
