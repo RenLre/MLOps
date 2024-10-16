@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
-import HPE
+import HPE_test
 
 default_args = {
     'owner': 'airflow',
@@ -23,7 +23,7 @@ dag = DAG(
 
 run_hpe_task = PythonOperator(
     task_id='run_hpe',
-    python_callable=HPE.main,
+    python_callable=HPE_test.main,
     dag=dag
 )
 
