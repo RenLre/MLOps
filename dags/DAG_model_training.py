@@ -1,3 +1,5 @@
+import sys
+import os
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
