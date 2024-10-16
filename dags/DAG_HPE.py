@@ -14,7 +14,7 @@ default_args = {
 }
 
 dag = DAG(
-    'DAG_HPE',
+    'dag_hpe',
     default_args=default_args,
     description='DAG to run Hyperparameter Estimation',
     schedule_interval=timedelta(days=1),

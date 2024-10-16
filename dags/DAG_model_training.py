@@ -15,7 +15,7 @@ default_args = {
 }
 
 dag = DAG(
-    'DAG_model_training',
+    'dag_model_training',
     default_args=default_args,
     description='DAG to run Model Training',
     schedule_interval=timedelta(days=1),
