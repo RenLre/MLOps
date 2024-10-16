@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../model_training')))
 import model_training_test
 
 default_args = {
