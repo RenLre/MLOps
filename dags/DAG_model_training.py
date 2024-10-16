@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
-import model_training
+import model_training_test
 
 default_args = {
     'owner': 'airflow',
@@ -33,7 +33,7 @@ def fetch_hyperparameters():
 def run_model_training(**kwargs):
     ti = kwargs['ti']
     hyperparameters = ti.xcom_pull(task_ids='fetch_hyperparameters')
-    model_training.train_model(hyperparameters)
+    model_training_test.train_model(hyperparameters)
 
 wait_for_hpe = ExternalTaskSensor(
     task_id='wait_for_hpe',
