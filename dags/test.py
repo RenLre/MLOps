@@ -10,7 +10,7 @@ default_args = {
     'retries': 1,
 }
 
-with DAG('sample_dag', default_args=default_args, schedule_interval='@daily') as dag:
+with DAG('test', default_args=default_args, schedule_interval='@daily') as dag:
     start = DummyOperator(task_id='start')
     end = DummyOperator(task_id='end')
 
