@@ -38,26 +38,26 @@ def run_model_training(**kwargs):
     hyperparameters = ti.xcom_pull(task_ids='fetch_hyperparameters')
     model_training_test.train_model(hyperparameters)
 
-wait_for_hpe = ExternalTaskSensor(
-    task_id='wait_for_hpe',
-    external_dag_id='DAG_model_training.py',
+run_hpe = ExternalTaskSensor(
+    task_id='run_hpe',
+    external_dag_id='DAG_model_training',  
     external_task_id='run_hpe',
     mode='reschedule',
-    timeout=3600,
+    timeout=6400,
     dag=dag
 )
 
-fetch_hyperparameters_task = PythonOperator(
+fetch_hyperparameters = PythonOperator(
     task_id='fetch_hyperparameters',
     python_callable=fetch_hyperparameters,
     dag=dag
 )
 
-run_model_training_task = PythonOperator(
+run_model_training = PythonOperator(
     task_id='run_model_training',
     python_callable=run_model_training,
     provide_context=True,
     dag=dag
 )
 
-wait_for_hpe >> fetch_hyperparameters_task >> run_model_training_task
+run_hpe >> fetch_hyperparameters >> run_model_training
