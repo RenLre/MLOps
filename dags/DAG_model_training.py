@@ -4,8 +4,9 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../model_training')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../mlops-repo')))
 import model_training_test
+from HPE import search_hyperparameter
 
 default_args = {
     'owner': 'airflow',
@@ -38,12 +39,9 @@ def run_model_training(**kwargs):
     hyperparameters = ti.xcom_pull(task_ids='fetch_hyperparameters')
     model_training_test.train_model(hyperparameters)
 
-run_hpe = ExternalTaskSensor(
+run_hpe = PythonOperator(
     task_id='run_hpe',
-    external_dag_id='DAG_model_training',  
-    external_task_id='run_hpe',
-    mode='reschedule',
-    timeout=6400,
+    python_callable=search_hyperparameter,
     dag=dag
 )
 
