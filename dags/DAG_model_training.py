@@ -1,13 +1,14 @@
 import sys
 import os
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../model_training')))
 from model_training_test import train_and_evaluate_model  
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../HPE')))
 from HPE_test import search_hyperparameters 
 
+# Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -18,6 +19,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
+# Define the DAG
 dag = DAG(
     'dag_model_training',
     default_args=default_args,
@@ -26,18 +28,27 @@ dag = DAG(
     catchup=False
 )
 
-def run_hpe():
+def run_hpe(activation_function):
     """Run the hyperparameter estimation script."""
-    search_hyperparameters()
+    search_hyperparameters(activation_function)
 
 def run_model_training():
     """Run the model training script."""
     train_and_evaluate_model()
 
-# Task to run the HPE script
-run_hpe_task = PythonOperator(
-    task_id='run_hpe',
+# Task to run the HPE script for 'sigmoid'
+run_hpe_sigmoid_task = PythonOperator(
+    task_id='run_hpe_sigmoid',
     python_callable=run_hpe,
+    op_kwargs={'activation_function': 'sigmoid'},
+    dag=dag
+)
+
+# Task to run the HPE script for 'relu'
+run_hpe_relu_task = PythonOperator(
+    task_id='run_hpe_relu',
+    python_callable=run_hpe,
+    op_kwargs={'activation_function': 'relu'},
     dag=dag
 )
 
@@ -48,5 +59,6 @@ run_model_training_task = PythonOperator(
     dag=dag
 )
 
-# Set task dependencies: run_hpe must finish before run_model_training
-run_hpe_task >> run_model_training_task
+# Set task dependencies: both HPE tasks must finish before model training
+run_hpe_sigmoid_task >> run_model_training_task
+run_hpe_relu_task >> run_model_training_task
