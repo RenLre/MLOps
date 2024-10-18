@@ -1,6 +1,3 @@
-Sure! Here’s a sample README file for your MLOPS project. You can modify it as needed to fit your project's specific details.
-
----
 
 # MLOPS Project
 
