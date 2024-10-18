@@ -3,6 +3,8 @@ import os
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
+
+# Insert the necessary paths for model training and hyperparameter estimation scripts
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../model_training')))
 from model_training_test import final_prediction 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../HPE')))
@@ -12,7 +14,8 @@ from HPE_test import search_hyperparameters
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 10, 16),
+    'start_date': datetime(2024, 10, 16, 9, 0, 0),  # Start at 9:00 AM on October 16, 2024
+    'end_date': datetime(2024, 10, 16, 9, 20, 0),   # End at 9:20 AM on October 16, 2024 (after 2 runs)
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -24,7 +27,7 @@ dag = DAG(
     'dag_model_training',
     default_args=default_args,
     description='DAG to run Model Training',
-    schedule_interval=timedelta(days=1),
+    schedule_interval=timedelta(minutes=10),  # Run every 10 minutes
     catchup=False
 )
 
