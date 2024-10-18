@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../model_training')))
-from model_training_test import train_and_evaluate_model  
+from model_training_test import final_prediction 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../HPE')))
 from HPE_test import search_hyperparameters 
 
@@ -34,7 +34,7 @@ def run_hpe(activation_function):
 
 def run_model_training():
     """Run the model training script."""
-    train_and_evaluate_model()
+    final_prediction()
 
 # Task to run the HPE script for 'sigmoid'
 run_hpe_sigmoid_task = PythonOperator(

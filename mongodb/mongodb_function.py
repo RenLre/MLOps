@@ -5,7 +5,7 @@ import numpy as np
 
 
 
-ef connect_db():
+def connect_db():
     """
     Establishes a connection to a MongoDB database.
 
