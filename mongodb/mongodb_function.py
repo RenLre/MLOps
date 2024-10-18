@@ -30,8 +30,7 @@ def select_collection(database_name, collection_name):
     
     return collection
 
-def insert_image_data(collection, images, labels, database_name, collection_name):
-    collection = select_collection(database_name, collection_name)
+def insert_image_data(collection, images, labels):
     data_to_insert = []
     for i in range(len(images)):
         document = {
@@ -45,16 +44,14 @@ def insert_image_data(collection, images, labels, database_name, collection_name
     
     
 def overwrite_image_data(
+    collection,
     images,
-    labels,
-    dataset_name,
-    database_name,
-    collection_name
+    labels
 ):
-    ...
+    collection.delete_many({})
+    insert_image_data(collection, images, labels)
     
-def load_image_data(database_name, collection_name):
-    collection = select_collection(database_name, collection_name)
+def load_image_data(collection):
     # def load_mnist_data(option='full', limit=10000):
     cursor = collection.find()  # Eine Teilmenge der Daten laden
     images = []
@@ -68,25 +65,27 @@ def load_image_data(database_name, collection_name):
     
     return images, labels
 
-def insert_hyperparameter_json(best_parameter_dict):
+def insert_hyperparameter_json(best_parameter_dict, activation):
+    collection_name = 'hyperparam_' + activation
     collection = select_collection(
         'hyperparam_db',
-        'hyperparam_collection'
+        collection_name
     )
     
     result = collection.insert_one(
         best_parameter_dict
     )
     
-    print(f'{len(result.inserted_id)} Dokumente wurden in die MongoDB eingefügt.')
+    print(f'JSON für {activation} wurde in die MongoDB eingefügt.')
     
 
-def load_hyperparameters(most_recent=True):
-    # Erstelle die Datenbank "castro" und die Collection "mnist"
+def load_hyperparameters(activation):
+    
+    collection_name = 'hyperparam_' + activation
     
     collection = select_collection(
         'hyperparam_db',
-        'hyperparam_collection'
+        collection_name
     )
 
     # Finde den neuesten Datenpunkt (sortiert nach _id, der automatisch eingefügte ObjectId)
