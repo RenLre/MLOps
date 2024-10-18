@@ -32,7 +32,7 @@ The **model_training** folder contains scripts dedicated to model estimation. Th
 
 ### Prerequisites
 
-- Python 3.x
+- Python < 3.13 (as later on problems arise with Tensorflow installation)
 - Docker (for the Airflow configuration)
 - MongoDB (for data storage and retrieval)
 - TensorFlow or other relevant libraries (for model training)
