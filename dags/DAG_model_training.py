@@ -28,7 +28,7 @@ dag = DAG(
 
 def run_hpe():
     """Run the hyperparameter estimation script."""
-    search_hyperparameter()
+    search_hyperparameters()
 
 def run_model_training():
     """Run the model training script."""

@@ -1,24 +1,18 @@
 import time
-import sys
-import os
 from tensorflow import keras
-from keras import layers
+from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 import json
 from datetime import datetime
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'mongodb')))
-from mongodb_function import load_image_data, insert_hyperparameter_json
-
-# def main():
-#     print("Starting Hyperparameter Estimation process...")
-#     time.sleep(5)  # Simulating some work
-#     print("Hyperparameter Estimation completed.")
-#     print("Best hyperparameters have been saved to the database.")
+from mongodb_function import select_collection, load_image_data, insert_hyperparameter_json
 
 def load_data():
     # Load the MNIST dataset
-    x_train_full, y_train_full = load_image_data('mnist_db', 'mnist_train')
-    x_test, y_test = load_image_data('mnist_db', 'mnist_test')
+    train_collection = select_collection('mnist_db', 'mnist_train')
+    x_train_full, y_train_full = load_image_data(train_collection)
+    
+    test_collection = select_collection('mnist_db', 'mnist_test')
+    x_test, y_test = load_image_data(test_collection)
 
     # Normalize the data
     x_train_full = x_train_full.astype('float32') / 255.0
@@ -81,10 +75,14 @@ def test_hyperparameter_set(
 
     print(f"Depth: {layer_depth}, Size: {layer_size}, Val Accuracy: {val_accuracy:.4f}")
     
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    
     hyperparameter_dict = {
         'Depth': layer_depth,
         'Size': layer_size,
-        'Val Accuracy': val_accuracy
+        'Val Accuracy': val_accuracy,
+        'Activation': activation,
+        'Time': timestamp
     }
     return hyperparameter_dict
     
@@ -92,11 +90,9 @@ def search_hyperparameters(activation_function):
     x_train, x_val, y_train, y_val = load_data()
     
     # Define the range for layer depth and layer size
-    layer_depths = [1, 2, 3]  # Number of hidden layers
-    layer_sizes = [32, 64, 128]  # Number of neurons in each hidden layer
-
-    best_accuracy = 0.0
-    best_params = {}
+    layer_depths = [1, 3, 5]  # Number of hidden layers
+    layer_sizes = [8, 32, 128]  # Number of neurons in each hidden layer
+    
     param_dicts = []
     for depth in layer_depths:
         for size in layer_sizes:
@@ -127,7 +123,10 @@ def search_hyperparameters(activation_function):
     with open(filename, 'w') as file:
         json.dump(max_dict, file, indent=4)
         
-    insert_hyperparameter_json(max_dict)
+    insert_hyperparameter_json(
+        max_dict,
+        activation_function
+    )
 
     print(f"Data saved to {filename}")
     
@@ -136,5 +135,5 @@ def search_hyperparameters(activation_function):
     
 
 if __name__ == "__main__":
-    # main()
     search_hyperparameters('sigmoid')
+    search_hyperparameters('relu')
