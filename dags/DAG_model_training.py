@@ -2,11 +2,11 @@ import sys
 import os
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../mlops-repo')))
-import model_training_test
-from HPE import search_hyperparameter
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../model_training')))
+from model_training_test import train_and_evaluate_model  
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../HPE')))
+from HPE_test import search_hyperparameters 
 
 default_args = {
     'owner': 'airflow',
@@ -26,36 +26,27 @@ dag = DAG(
     catchup=False
 )
 
-def fetch_hyperparameters():
-    # Simulating fetching hyperparameters from a database
-    return {
-        'learning_rate': 0.01,
-        'batch_size': 32,
-        'epochs': 100
-    }
+def run_hpe():
+    """Run the hyperparameter estimation script."""
+    search_hyperparameter()
 
-def run_model_training(**kwargs):
-    ti = kwargs['ti']
-    hyperparameters = ti.xcom_pull(task_ids='fetch_hyperparameters')
-    model_training_test.train_model(hyperparameters)
+def run_model_training():
+    """Run the model training script."""
+    train_and_evaluate_model()
 
-run_hpe = PythonOperator(
+# Task to run the HPE script
+run_hpe_task = PythonOperator(
     task_id='run_hpe',
-    python_callable=search_hyperparameter,
+    python_callable=run_hpe,
     dag=dag
 )
 
-fetch_hyperparameters = PythonOperator(
-    task_id='fetch_hyperparameters',
-    python_callable=fetch_hyperparameters,
-    dag=dag
-)
-
-run_model_training = PythonOperator(
+# Task to run the model training script
+run_model_training_task = PythonOperator(
     task_id='run_model_training',
     python_callable=run_model_training,
-    provide_context=True,
     dag=dag
 )
 
-run_hpe >> fetch_hyperparameters >> run_model_training
+# Set task dependencies: run_hpe must finish before run_model_training
+run_hpe_task >> run_model_training_task

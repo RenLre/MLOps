@@ -1,9 +1,13 @@
 import time
+import sys
+import os
 from tensorflow import keras
-from tensorflow.keras import layers
+from keras import layers
 from sklearn.model_selection import train_test_split
 import json
 from datetime import datetime
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'mongodb')))
+from mongodb_function import load_image_data, insert_hyperparameter_json
 
 # def main():
 #     print("Starting Hyperparameter Estimation process...")
@@ -13,7 +17,8 @@ from datetime import datetime
 
 def load_data():
     # Load the MNIST dataset
-    (x_train_full, y_train_full), (x_test, y_test) = keras.datasets.mnist.load_data()
+    x_train_full, y_train_full = load_image_data('mnist_db', 'mnist_train')
+    x_test, y_test = load_image_data('mnist_db', 'mnist_test')
 
     # Normalize the data
     x_train_full = x_train_full.astype('float32') / 255.0
@@ -31,7 +36,6 @@ def load_data():
         random_state=42
     )
 
-    print(type(x_test))
     return x_train, x_val, y_train, y_val
 
     
@@ -42,7 +46,8 @@ def test_hyperparameter_set(
     x_train,
     y_train,
     x_val,
-    y_val
+    y_val,
+    activation
 ):
     
     model = keras.Sequential()
@@ -50,7 +55,7 @@ def test_hyperparameter_set(
 
     # Add hidden layers
     for _ in range(layer_depth):
-        model.add(layers.Dense(layer_size, activation='relu'))
+        model.add(layers.Dense(layer_size, activation=activation))
 
     # Output layer
     model.add(layers.Dense(10, activation='softmax'))
@@ -83,7 +88,7 @@ def test_hyperparameter_set(
     }
     return hyperparameter_dict
     
-def search_hyperparameter():
+def search_hyperparameters(activation_function):
     x_train, x_val, y_train, y_val = load_data()
     
     # Define the range for layer depth and layer size
@@ -102,8 +107,8 @@ def search_hyperparameter():
                     x_train,
                     y_train,
                     x_val,
-                    y_val
-                
+                    y_val,
+                    activation_function
                 )
             )
             param_dicts.append(
@@ -121,12 +126,15 @@ def search_hyperparameter():
     # Save the dictionary as a JSON file
     with open(filename, 'w') as file:
         json.dump(max_dict, file, indent=4)
+        
+    insert_hyperparameter_json(max_dict)
 
     print(f"Data saved to {filename}")
+    
 
             
     
 
 if __name__ == "__main__":
     # main()
-    search_hyperparameter()
+    search_hyperparameters('sigmoid')
